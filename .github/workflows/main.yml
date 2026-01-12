@@ -16,6 +16,7 @@ jobs:
           mkdir -p cmdline-tools/latest
           mv cmdline-tools/bin cmdline-tools/latest/
           mv cmdline-tools/lib cmdline-tools/latest/
+          # This installs the build-tools version 34.0.0 which contains AIDL
           yes | ./cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "build-tools;34.0.0" "platforms;android-34" "platform-tools"
 
       - name: Install Buildozer and Cython
@@ -27,6 +28,10 @@ jobs:
         working-directory: chatbot
         run: |
           export ANDROID_SDK_HOME=$HOME/android-sdk
+          # Linking the manual SDK to Buildozer's internal directory to fix 'Aidl not found'
+          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
+          ln -s $HOME/android-sdk/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
+          
           export PATH=$PATH:$HOME/.local/bin
           buildozer android debug
 
@@ -34,5 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UOK-Chatbot-APK
-          # The fix: This finds any APK in any subfolder
           path: ./**/*.apk
