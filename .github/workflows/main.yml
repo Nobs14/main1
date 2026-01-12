@@ -17,24 +17,18 @@ jobs:
           mkdir -p cmdline-tools/latest
           mv cmdline-tools/bin cmdline-tools/latest/
           mv cmdline-tools/lib cmdline-tools/latest/
-          # Install build-tools (which includes AIDL)
+          # Install build-tools (including AIDL) and platforms
           yes | ./cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "build-tools;34.0.0" "platforms;android-34" "platform-tools"
 
-      - name: Install Buildozer
+      - name: Install Buildozer and Cython
         run: |
-          pip3 install --user --upgrade buildozer
+          # Cython is required to compile Python to C for Android
+          pip3 install --user --upgrade buildozer cython==0.29.33
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Build with Buildozer
         working-directory: chatbot
         run: |
           export ANDROID_SDK_HOME=$HOME/android-sdk
-          export ANDROID_NDK_HOME=$HOME/android-sdk/ndk-bundle
-          # This runs the build in your subfolder
-          buildozer android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: UOK-Chatbot-APK
-          path: chatbot/bin/*.apk
+          export PATH=$PATH:$HOME/.local/bin
+          # Force buildozer to use the installed
